@@ -12,11 +12,11 @@ import {
   FormGroup, 
   Label, 
   Input, 
-  FormText
+  InputGroup,
+  InputGroupAddon
 } from 'reactstrap';
 
 function Post(props) {
-  // TODO refactor into separate function after figuring out how to use es6 syntax
   let items = [];
   props.postContent.images.map((image, index) => {
     items.push({ 
@@ -41,14 +41,14 @@ Post.propTypes = {
 };
 
 function Feed(props) {
-  const postsJsx = props.posts.map((post, index) => {
+  const posts = props.posts.map((post, index) => {
     return (
       <div className="post" key={index}>
         <Post postContent={post}></Post>
       </div>
     );
   })
-  return postsJsx;
+  return posts;
 }
 
 Feed.propTypes = {
@@ -62,20 +62,61 @@ function NewPostForm(props) {
       <Form className="new-post-form">
         <FormGroup>
           <Label for="postTitle">Post Title</Label>
-          <Input type="email" name="title" id="postTitle" placeholder="Post Title" />
+          <Input type="text" name="title" id="postTitle" placeholder="Post Title" />
         </FormGroup>
         <FormGroup>
           <Label for="postDescription">Post Description</Label>
           <Input type="textarea" name="description" id="postDescription" placeholder="Post Description" />
         </FormGroup>
         <FormGroup>
-          <Label for="imageUrl">Image Url</Label>
-          <Input type="url" name="image" id="imageUrl" placeholder="https://www.tesla.com/sites/default/files/blog_images/model-s-photo-gallery-06.jpg" />
+          <Label for="imageUrl">Image Urls</Label>
+          <ImageInputFields 
+            imageInputCounter={props.imageInputCounter}
+            handleRemoveUrlInput={props.handleRemoveUrlInput}
+          />
         </FormGroup>
         <Button color="primary">Submit</Button>
+        <Button color="success" className="new-post-form-add-image-button" onClick={props.handleAddImageInput}>Add Another Image</Button>
       </Form>
     </div>
   );
+}
+
+NewPostForm.propTypes = {
+  handleAddImageInput: PropTypes.func,
+  handleRemoveUrlInput: PropTypes.func,
+  imageInputCounter: PropTypes.number
+};
+
+// TODO: make this remove the selected field rather than just the bottom one
+function ImageInputFields(props) {
+  const imageInputFields = [];
+  const firstImageInputField = <Input type="url" name="image" id="imageUrl" placeholder="https://www.tesla.com/sites/default/files/blog_images/model-s-photo-gallery-06.jpg" />;
+  const removableImageInputField =  
+  <InputGroup>
+    <Input type="url" name="image" id="imageUrl" placeholder="https://www.tesla.com/sites/default/files/blog_images/model-s-photo-gallery-06.jpg" />
+    <InputGroupAddon addonType="append">
+      <Button color="danger" onClick={props.handleRemoveUrlInput}>Remove</Button>
+    </InputGroupAddon>
+  </InputGroup>;
+
+  imageInputFields.push(firstImageInputField);
+  for (let i = 1; i < props.imageInputCounter; i++) {
+    imageInputFields.push(removableImageInputField);
+  }
+  const indexedImageInputFields = imageInputFields.map((input, index) => {
+    return (
+      <div key={index} className="new-post-form-url-input-field">
+        {input}
+      </div>
+    );
+  });
+  return indexedImageInputFields;
+}
+
+ImageInputFields.propTypes = {
+  handleRemoveUrlInput: PropTypes.func,
+  imageInputCounter: PropTypes.number
 }
 
 // TODO: refactor components into their own files
@@ -87,8 +128,12 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      posts: []
+      posts: [],
+      imageInputCounter: 1
     };
+
+    this.handleAddImageInput = this.handleAddImageInput.bind(this);
+    this.handleRemoveUrlInput = this.handleRemoveUrlInput.bind(this);
   }
 
   async componentDidMount() {
@@ -97,14 +142,31 @@ class App extends React.Component {
       const posts = await response.json();
       if (posts) {
         this.setState({
-          posts: posts,
-          isFetching: false
+          posts: posts
         });
       }
     } catch(err) {
       console.error(err);
-    }
+    } 
   };
+
+  handleAddImageInput(event) {
+    event.preventDefault();
+    let imageInputCounter = this.state.imageInputCounter;
+    imageInputCounter++;
+    this.setState({
+      imageInputCounter: imageInputCounter
+    });
+  }
+
+  handleRemoveUrlInput(event) {
+    event.preventDefault();
+    let imageInputCounter = this.state.imageInputCounter;
+    imageInputCounter--;
+    this.setState({
+      imageInputCounter: imageInputCounter
+    });
+  }
 
   render() {
     return (
@@ -114,7 +176,12 @@ class App extends React.Component {
         </div>
         <div className="row new-post-form-row">
           <div className="col-md-8 offset-md-2 border-bottom">
-            <NewPostForm />
+            <NewPostForm 
+              imageInputFields={this.state.imageInputFields} 
+              handleAddImageInput={this.handleAddImageInput}
+              handleRemoveUrlInput={this.handleRemoveUrlInput}
+              imageInputCounter={this.state.imageInputCounter}
+            />
           </div>
         </div>
         <div className="row">

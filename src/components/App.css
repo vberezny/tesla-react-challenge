@@ -9,11 +9,19 @@
 }
 
 .new-post-form {
-  padding: 20px 0 20px 0; 
+  padding: 20px 0 20px 0;
 }
 
 .new-post-form-header-text {
   font-size: 30px;
+}
+
+.new-post-form-url-input-field {
+  margin-bottom: 5px;
+}
+
+.new-post-form-add-image-button {
+  float: right;
 }
 
 .post {
