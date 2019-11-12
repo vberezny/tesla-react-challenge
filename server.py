@@ -12,12 +12,12 @@ post_id_serial = 2
 posts = {
     1: {
         'id': 1,
-        'title': 'Is this hard?',
-        'description': 'Tough questions here'
+        'title': 'First Post Title',
+        'description': 'Need to make a nice long description here to see what it will look like once a post is rendered.'
     },
     2: {
         'id': 2,
-        'title': 'React Challenge 2018!',
+        'title': 'Second Post Title',
         'description': 'Challenging answers there'
     }
 }

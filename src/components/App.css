@@ -1,11 +1,31 @@
-.insta-basic-page-container {
+.insta-basic-title {
+  font-size: 40px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.new-post-form-row {
+  padding-bottom: 20px;
+}
+
+.new-post-form {
+  padding: 20px 0 20px 0; 
+}
+
+.new-post-form-header-text {
+  font-size: 30px;
+}
+
+.post {
+  margin-bottom: 15px;
+}
+
+.post-title {
+  font-size: 25px;
+  font-weight: bold;
   text-align: center;
 }
 
-.insta-basic-title {
-  font-size: 40px;
-}
-
-.form-header-text {
-  font-size: 30px;
+.post-carousel {
+  padding-bottom: 15px;
 }

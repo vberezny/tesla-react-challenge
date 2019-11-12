@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import './App.css';
 import {
   Card,
-  CardImg,
   CardBody,
   CardTitle,
   CardSubtitle,
@@ -16,7 +15,6 @@ import {
   FormText
 } from 'reactstrap';
 
-// TODO: style the post
 function Post(props) {
   // TODO refactor into separate function after figuring out how to use es6 syntax
   let items = [];
@@ -29,10 +27,10 @@ function Post(props) {
   return (
     <Card>
       <CardBody>
-        <CardTitle>{props.postContent.title}</CardTitle>
+        <CardTitle className="post-title">{props.postContent.title}</CardTitle>
         {/* TODO: make it so it doesn't autoPlay, pause on hover prop? */}
-        <UncontrolledCarousel items={items} autoPlay={false} />
-        <CardSubtitle>{props.postContent.description}</CardSubtitle>
+        <UncontrolledCarousel className="post-carousel" items={items} autoPlay={false} />
+        <CardSubtitle className="post-description">{props.postContent.description}</CardSubtitle>
       </CardBody>
     </Card>
   );
@@ -42,13 +40,12 @@ Post.propTypes = {
   postContent: PropTypes.object,
 };
 
-// TODO style the feed
 function Feed(props) {
   const postsJsx = props.posts.map((post, index) => {
     return (
-      <ul key={index}>
+      <div className="post" key={index}>
         <Post postContent={post}></Post>
-      </ul>
+      </div>
     );
   })
   return postsJsx;
@@ -61,32 +58,29 @@ Feed.propTypes = {
 function NewPostForm(props) {
   return (
     <div>
-      <h1 className="form-header-text">{"Create a New Post"}</h1>
-      <Form>
+      <h1 className="new-post-form-header-text">{"Create a New Post"}</h1>
+      <Form className="new-post-form">
         <FormGroup>
           <Label for="postTitle">Post Title</Label>
           <Input type="email" name="title" id="postTitle" placeholder="Post Title" />
         </FormGroup>
         <FormGroup>
-          <Label for="postDescription">Text Area</Label>
+          <Label for="postDescription">Post Description</Label>
           <Input type="textarea" name="description" id="postDescription" placeholder="Post Description" />
         </FormGroup>
         <FormGroup>
           <Label for="imageUrl">Image Url</Label>
           <Input type="url" name="image" id="imageUrl" placeholder="https://www.tesla.com/sites/default/files/blog_images/model-s-photo-gallery-06.jpg" />
         </FormGroup>
-        <Button>Submit</Button>
+        <Button color="primary">Submit</Button>
       </Form>
     </div>
   );
 }
 
-// TODO: set up CSS organization/structure... containers, and general styling
-
 // TODO: refactor components into their own files
 
 // TODO: setup contants file if it makes sense afterwards
-
 class App extends React.Component {
 
   constructor(props) {
@@ -114,10 +108,20 @@ class App extends React.Component {
 
   render() {
     return (
-      <div className="insta-basic-page-container">
-        <h1 className="insta-basic-title">InstaBasic</h1>
-        <NewPostForm></NewPostForm>
-        <Feed posts={this.state.posts}></Feed>
+      <div className="insta-basic-page-container container-fluid">
+        <div className="row justify-content-center">
+          <h1 className="insta-basic-title">InstaBasic</h1>
+        </div>
+        <div className="row new-post-form-row">
+          <div className="col-md-8 offset-md-2 border-bottom">
+            <NewPostForm />
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-8 offset-md-2">
+            <Feed posts={this.state.posts}></Feed>
+          </div>
+        </div>
       </div>
     );
   };
