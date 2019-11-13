@@ -11,7 +11,6 @@ import {
 import CreatePostForm from './CreatePostForm.jsx'
 
 // TODO: style check: consistent use of semicolons, no code re-use, airbnb standards, css class on everything
-// TODO: refactor components into their own files if they get too large
 // TODO: setup contants file
 
 function Post(props) {
@@ -39,7 +38,7 @@ Post.propTypes = {
 };
 
 function Feed(props) {
-  const posts = props.posts.map((post, index) => {
+  const posts = props.posts.reverse().map((post, index) => {
     return (
       <div className="post" key={index}>
         <Post postData={post}></Post>
@@ -60,8 +59,6 @@ class App extends React.Component {
       posts: [],
       nextPostId: 0
     };
-
-    this.handleSubmitForm = this.handleSubmitForm.bind(this)
   }
 
   async componentDidMount() {
@@ -80,26 +77,9 @@ class App extends React.Component {
     }
   };
 
-  // TODO: implement and figure out parameters
-  async handleSubmitForm(event) {
-    event.preventDefault();
-    try {
-      const response = await fetch('http://127.0.0.1:5000/images', {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          url: 'https://cdn.mos.cms.futurecdn.net/YH2qZaMaBk6xp9S5tz8kcC-970-80.png',
-          post_id: 2
-        })
-      });
-      console.log(response);
-    } catch(err) {
-      console.error(err);
-    }
-  }
+  // TODO: implement and pass this to the Form component, call the fetch again
+  // handleUpdateFeed() {
+  // }
 
   render() {
     return (
@@ -111,7 +91,7 @@ class App extends React.Component {
           <div className="col-md-8 offset-md-2">
             <CreatePostForm 
               postId={this.state.nextPostId}
-              handleSubmitForm={this.handleSubmitForm}
+              // handleSubmitForm={this.handleSubmitForm}
             />
           </div>
         </div>

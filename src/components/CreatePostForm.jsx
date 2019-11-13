@@ -41,13 +41,53 @@ class CreatePostForm extends React.Component {
       images: [{
         post_id: null,
         url: ''
-      }]
+      }],
+      postTitle: '',
+      postDescription: ''
     };
 
+    this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.handleAddImageInput = this.handleAddImageInput.bind(this);
     this.handleRemoveImageInput = this.handleRemoveImageInput.bind(this);
     this.handleUrlInputChange = this.handleUrlInputChange.bind(this);
+    this.handlePostTitleChange = this.handlePostTitleChange.bind(this);
+    this.handlePostDescriptionChange = this.handlePostDescriptionChange.bind(this);
   }
+
+  // TODO implement posting of images to backend and refreshing feed once done.
+  async handleSubmitForm(event) {
+    event.preventDefault();
+    try {
+      const newPost = await fetch('http://127.0.0.1:5000/posts', {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          title: this.state.postTitle,
+          description: this.state.postDescription
+        })
+      });
+      console.log(newPost);
+      // if (newPost) {
+      //   const newImages = await fetch('http://127.0.0.1:5000/images', {
+      //   method: 'POST',
+      //   mode: 'cors',
+      //   headers: {
+      //     'Accept': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //     title: this.state.postTitle,
+      //     description: this.state.postDescription
+      //   })
+      // });
+      // }
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
 
   handleAddImageInput(event) {
     event.preventDefault();
@@ -57,38 +97,62 @@ class CreatePostForm extends React.Component {
     }
     let images = this.state.images;
     images.push(image);
-    this.setState({images: images})
+    this.setState({images: images});
   }
 
   handleRemoveImageInput(event, index) {
     event.preventDefault();
     let images = this.state.images;
       images.splice(index, 1);
-    this.setState({images: images})
+    this.setState({images: images});
   }
 
   handleUrlInputChange(event, index) {
-    const url = event.target.value
+    const url = event.target.value;
     let images = this.state.images;
     images[index]['url'] = url;
-    this.setState({images: images})
+    if (index == 0) images[index]['post_id'] = this.props.postId;
+    this.setState({images: images});
+  }
+
+  handlePostTitleChange(event) {
+    const postTitle = event.target.value;
+    this.setState({postTitle: postTitle});
+  }
+
+  handlePostDescriptionChange(event) {
+    const postDescription = event.target.value;
+    this.setState({postDescription: postDescription});
   }
 
   render() {
     let images = this.state.images
+    let submissionDisabled = this.state.postTitle == '' || this.state.postDescription == '' || this.state.images[0]['url'] == '';
     return (
       <div>
         <h1 className="new-post-form-header-text">{"Create a New Post"}</h1>
         <Form 
           className="new-post-form border-bottom" 
-          onSubmit={this.props.handleSubmitForm}>
+          onSubmit={this.handleSubmitForm}>
           <FormGroup>
             <Label for="title">Post Title</Label>
-            <Input type="text" name="title" id="title" placeholder="Post Title" />
+            <Input 
+              type="text" 
+              name="title" 
+              id="title" 
+              placeholder="Post Title"
+              onChange={(event) => this.handlePostTitleChange(event)}
+            />
           </FormGroup>
           <FormGroup>
             <Label for="description">Post Description</Label>
-            <Input type="textarea" name="description" id="description" placeholder="Post Description" />
+            <Input 
+              type="textarea" 
+              name="description" 
+              id="description" 
+              placeholder="Post Description"
+              onChange={(event) => this.handlePostDescriptionChange(event)}
+            />
           </FormGroup>
           <FormGroup>
             <Label for="url">Image Urls</Label>
@@ -118,26 +182,20 @@ class CreatePostForm extends React.Component {
               })
             }
           </FormGroup>
-          {/* TODO: rethink button layout */}
-          <div className="row">
-            <div className="col-sm-4">
-            <Button 
-              color="success" 
-              className="new-post-form-add-image-button" 
-              onClick={this.handleAddImageInput}>
-              Add Image Field
-            </Button>
-            </div>
-            <div className="col-sm-4">
-            </div>
-            <div className="col-sm-4">
-            <Button 
-              color="primary" 
-              className="new-post-form-submit-image-button">
-              Submit
-            </Button>
-            </div>
-          </div>
+          <Button 
+            color="success" 
+            className="new-post-form-add-image-button" 
+            onClick={this.handleAddImageInput}
+          >
+            Add Image Field
+          </Button>
+          <Button 
+            color="primary" 
+            className="new-post-form-submit-image-button"
+            disabled={submissionDisabled}
+          >
+            Submit
+          </Button>
         </Form>
       </div>
     );
