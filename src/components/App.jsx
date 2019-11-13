@@ -6,19 +6,17 @@ import {
   CardBody,
   CardTitle,
   CardSubtitle,
-  UncontrolledCarousel,
-  Button,
-  Form, 
-  FormGroup, 
-  Label, 
-  Input
+  UncontrolledCarousel
 } from 'reactstrap';
+import CreatePostForm from './CreatePostForm.jsx'
 
-// TODO: style check, make sure code follows consistent pattens, airbnb javascript/react to make sure
+// TODO: style check: consistent use of semicolons, no code re-use, airbnb standards, css class on everything
+// TODO: refactor components into their own files if they get too large
+// TODO: setup contants file
 
 function Post(props) {
   let items = [];
-  props.postContent.images.map((image, index) => {
+  props.postData.images.map((image, index) => {
     items.push({ 
       "src": image["url"],
       "key": index
@@ -27,24 +25,24 @@ function Post(props) {
   return (
     <Card>
       <CardBody>
-        <CardTitle className="post-title">{props.postContent.title}</CardTitle>
+        <CardTitle className="post-title">{props.postData.title}</CardTitle>
         {/* TODO: make it so it doesn't autoPlay, pause on hover prop? */}
         <UncontrolledCarousel className="post-carousel" items={items} autoPlay={false} />
-        <CardSubtitle className="post-description">{props.postContent.description}</CardSubtitle>
+        <CardSubtitle className="post-description">{props.postData.description}</CardSubtitle>
       </CardBody>
     </Card>
   );
 }
 
 Post.propTypes = {
-  postContent: PropTypes.object,
+  postData: PropTypes.object,
 };
 
 function Feed(props) {
   const posts = props.posts.map((post, index) => {
     return (
       <div className="post" key={index}>
-        <Post postContent={post}></Post>
+        <Post postData={post}></Post>
       </div>
     );
   })
@@ -55,92 +53,15 @@ Feed.propTypes = {
   posts: PropTypes.array
 };
 
-// TODO try moving component to separate file and making use of state to control number of input fields, easier than passing functions around
-function NewPostForm(props) {
-  let deleteButton;
-  if (props.imageInputFields.length > 0) {
-    deleteButton = <Button 
-      color="danger"
-      className="new-post-form-remove-image-button"
-      onClick={(event) => {props.handleRemoveImageInput(event)}}>
-      Remove Image Field
-    </Button>
-  }
-  const extraImageInputFields = props.imageInputFields.map((input, index) => {
-    return (
-      <div className="new-post-form-url-input-field" key={index}>{input}</div>
-    );
-  });
-  return (
-    <div>
-      <h1 className="new-post-form-header-text">{"Create a New Post"}</h1>
-      <Form className="new-post-form">
-        <FormGroup>
-          <Label for="postTitle">Post Title</Label>
-          <Input type="text" name="title" id="postTitle" placeholder="Post Title" />
-        </FormGroup>
-        <FormGroup>
-          <Label for="postDescription">Post Description</Label>
-          <Input type="textarea" name="description" id="postDescription" placeholder="Post Description" />
-        </FormGroup>
-        <FormGroup>
-          <Label for="imageUrl">Image Urls</Label>
-          <div className="new-post-form-url-input-field">
-            <Input 
-              type="url" 
-              name="image" 
-              id="imageUrl" 
-              placeholder="https://www.tesla.com/sites/default/files/blog_images/model-s-photo-gallery-06.jpg"
-            />
-          </div>
-          {extraImageInputFields}
-        </FormGroup>
-        {/* TODO: rethink button layout */}
-        <div class="row">
-          <div class="col-sm-4">
-          <Button 
-            color="success" 
-            className="new-post-form-add-image-button" 
-            onClick={props.handleAddImageInput}>
-            {"Add Another Image"}
-          </Button>
-          </div>
-          <div class="col-sm-4">
-          {deleteButton}
-          </div>
-          <div class="col-sm-4">
-          <Button 
-            color="primary" 
-            className="new-post-form-submit-image-button">
-            {"Submit"}
-          </Button>
-          </div>
-        </div>
-      </Form>
-    </div>
-  );
-}
-
-NewPostForm.propTypes = {
-  handleAddImageInput: PropTypes.func,
-  handleRemoveImageInput: PropTypes.func,
-  imageInputFields: PropTypes.array
-};
-
-// TODO: refactor components into their own files if it seems necessary
-// TODO: setup contants file if it makes sense afterwards
 class App extends React.Component {
-
   constructor(props) {
     super(props);
-
     this.state = {
       posts: [],
-      imageInputFields: []
+      nextPostId: 0
     };
 
-    this.handleAddImageInput = this.handleAddImageInput.bind(this);
-    this.handleRemoveImageInput = this.handleRemoveImageInput.bind(this);
+    this.handleSubmitForm = this.handleSubmitForm.bind(this)
   }
 
   async componentDidMount() {
@@ -148,8 +69,10 @@ class App extends React.Component {
       const response = await fetch('http://127.0.0.1:5000/posts');
       const posts = await response.json();
       if (posts) {
+        let nextPostId = posts[posts.length - 1]['id'] + 1;
         this.setState({
-          posts: posts
+          posts: posts,
+          nextPostId: nextPostId
         });
       }
     } catch(err) {
@@ -157,31 +80,25 @@ class App extends React.Component {
     }
   };
 
-  // TODO: refactor to separate newform component
-  handleAddImageInput(event) {
+  // TODO: implement and figure out parameters
+  async handleSubmitForm(event) {
     event.preventDefault();
-    const imageInputFields = this.state.imageInputFields;
-    const imageInputField = <Input 
-      type="url" 
-      name="image" 
-      id="imageUrl" 
-      placeholder="https://www.tesla.com/sites/default/files/blog_images/model-s-photo-gallery-06.jpg" 
-    />
-    imageInputFields.push(imageInputField);
-    this.setState({
-      imageInputFields: imageInputFields
-    });
-  }
-
-  // TODO: refactor to separate newform component
-  // TODO: change to remove selected input field
-  handleRemoveImageInput(event) {
-    event.preventDefault();
-    let imageInputFields = this.state.imageInputFields;
-    imageInputFields.pop();
-    this.setState({
-      imageInputFields: imageInputFields
-    });
+    try {
+      const response = await fetch('http://127.0.0.1:5000/images', {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          url: 'https://cdn.mos.cms.futurecdn.net/YH2qZaMaBk6xp9S5tz8kcC-970-80.png',
+          post_id: 2
+        })
+      });
+      console.log(response);
+    } catch(err) {
+      console.error(err);
+    }
   }
 
   render() {
@@ -191,11 +108,10 @@ class App extends React.Component {
           <h1 className="insta-basic-title">InstaBasic</h1>
         </div>
         <div className="row new-post-form-row">
-          <div className="col-md-8 offset-md-2 border-bottom">
-            <NewPostForm 
-              imageInputFields={this.state.imageInputFields} 
-              handleAddImageInput={this.handleAddImageInput}
-              handleRemoveImageInput={this.handleRemoveImageInput}
+          <div className="col-md-8 offset-md-2">
+            <CreatePostForm 
+              postId={this.state.nextPostId}
+              handleSubmitForm={this.handleSubmitForm}
             />
           </div>
         </div>

@@ -62,7 +62,7 @@ class Image(Resource):
 
     def put(self, image_id):
         image = images[image_id]
-        data = request.get_json()
+        data = request.get_json(force=True)
         values = {k: data.get(k, v) for k, v in image.items()}
         images[image_id].update(values)
         return values
@@ -79,7 +79,7 @@ class Images(Resource):
     def post(self):
         global image_id_serial
         image_id_serial += 1
-        data = request.get_json()
+        data = request.get_json(force=True)
         values = {
             'id': image_id_serial,
             'url': data['url'],
@@ -98,7 +98,7 @@ class Post(Resource):
 
     def put(self, post_id):
         post = posts[post_id]
-        data = request.get_json()
+        data = request.get_json(force=True)
         data.pop('images', [])
         values = {k: data.get(k, v) for k, v in post.items()}
         posts[post_id].update(values)
@@ -124,7 +124,7 @@ class Posts(Resource):
     def post(self):
         global post_id_serial
         post_id_serial += 1
-        data = request.get_json()
+        data = request.get_json(force=True)
         print data
         values = {
             'id': post_id_serial,
