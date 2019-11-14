@@ -91,7 +91,7 @@ class CreatePostForm extends React.Component {
     this.handleResetState = this.handleResetState.bind(this);
   }
 
-  async handleSubmitForm(event) {
+  handleSubmitForm = async (event) => {
     event.preventDefault();
     let postResponse;
     try {
@@ -132,7 +132,7 @@ class CreatePostForm extends React.Component {
     this.handleResetState();
   }
 
-  handleAddImageInput(event) {
+  handleAddImageInput = (event) => {
     event.preventDefault();
     const image = {
       url: ""
@@ -142,38 +142,38 @@ class CreatePostForm extends React.Component {
     this.setState({images: images});
   }
 
-  handleRemoveImageInput(event, index) {
+  handleRemoveImageInput = (event, index) => {
     event.preventDefault();
     let images = this.state.images;
       images.splice(index, 1);
     this.setState({images: images});
   }
 
-  handleUrlInputChange(event, index) {
+  handleUrlInputChange = (event, index) => {
     const url = event.target.value;
     let images = this.state.images;
     images[index][STRINGS.IMAGE_URL_INDEX] = url;
     this.setState({images: images});
   }
 
-  handlePostTitleChange(event) {
+  handlePostTitleChange = (event) => {
     const postTitle = event.target.value;
     this.setState({postTitle: postTitle});
   }
 
-  handlePostDescriptionChange(event) {
+  handlePostDescriptionChange = (event) => {
     const postDescription = event.target.value;
     this.setState({postDescription: postDescription});
   }
 
-  handleResetState() {
+  handleResetState = () => {
     this.setState({
       images: [{
         url: ''
       }],
       postTitle: '',
       postDescription: ''
-    })
+    });
   }
 
   render() {
@@ -192,7 +192,8 @@ class CreatePostForm extends React.Component {
             <Input 
               type="text" 
               name="title" 
-              id="title" 
+              id="title"
+              value={this.state.postTitle}
               placeholder={STRINGS.FORM_POST_TITLE_TEXT}
               onChange={(event) => this.handlePostTitleChange(event)}
             />
@@ -202,7 +203,8 @@ class CreatePostForm extends React.Component {
             <Input 
               type="textarea" 
               name="description" 
-              id="description" 
+              id="description"
+              value={this.state.postDescription}
               placeholder={STRINGS.FORM_POST_DESCRIPTION_TEXT}
               onChange={(event) => this.handlePostDescriptionChange(event)}
             />

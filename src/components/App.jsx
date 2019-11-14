@@ -70,7 +70,7 @@ class App extends React.Component {
     this.handleRefreshFeed = this.handleRefreshFeed.bind(this);
   }
 
-  componentDidMount() {
+  componentDidMount = () => {
     this.handleRefreshFeed();
   };
 
