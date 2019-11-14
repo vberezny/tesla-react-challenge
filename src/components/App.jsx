@@ -74,7 +74,7 @@ class App extends React.Component {
     this.handleRefreshFeed();
   };
 
-  async handleRefreshFeed() {
+  handleRefreshFeed = async () => {
     try {
       const response = await fetch(URLS.POSTS_ENDPOINT);
       const posts = await response.json();

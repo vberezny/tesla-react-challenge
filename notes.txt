@@ -1,7 +1,0 @@
-- create a form for the user to create a post with image urls.
-
-- Once the user creates a post, you should update the main page with
-the latest post, sorting from newest to oldest.
-
-- Your home page should show all posts and associated images from 
-the backend server for the user to view. This should show the title, description, and images for all posts.
