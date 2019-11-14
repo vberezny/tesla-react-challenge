@@ -10,11 +10,15 @@ import {
   InputGroup,
   InputGroupAddon
 } from 'reactstrap';
+import {
+  STRINGS,
+  URLS
+} from './Constants.js';
 
 function ImageInputs(props) {
   const imageInputs = props.images.map((image, index) => {
     const isFirstInput = index == 0;
-    const inputValue = image['url']
+    const inputValue = image[STRINGS.IMAGE_URL_INDEX];
     return (
       <div key={index} className="new-post-form-url-input-field">
         <InputGroup>
@@ -23,7 +27,7 @@ function ImageInputs(props) {
             name="image" 
             id="url"
             value={inputValue}
-            placeholder="https://www.tesla.com/sites/default/files/blog_images/model-s-photo-gallery-06.jpg"
+            placeholder={STRINGS.IMAGE_INPUT_PLACEHOLDER}
             onChange={(event) => props.handleUrlInputChange(event, index)}
           />
           <CustomInputGroupAddon
@@ -54,7 +58,7 @@ function CustomInputGroupAddon(props) {
           color="danger" 
           onClick={(event) => props.handleRemoveImageInput(event, props.index)}
         >
-          Remove
+          {STRINGS.FORM_REMOVE_BUTTON}
         </Button>
       </InputGroupAddon>
     );
@@ -84,12 +88,14 @@ class CreatePostForm extends React.Component {
     this.handleUrlInputChange = this.handleUrlInputChange.bind(this);
     this.handlePostTitleChange = this.handlePostTitleChange.bind(this);
     this.handlePostDescriptionChange = this.handlePostDescriptionChange.bind(this);
+    this.handleResetState = this.handleResetState.bind(this);
   }
 
   async handleSubmitForm(event) {
     event.preventDefault();
+    let postResponse;
     try {
-      const response = await fetch('http://127.0.0.1:5000/posts', {
+      postResponse = await fetch(URLS.POSTS_ENDPOINT, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -100,38 +106,37 @@ class CreatePostForm extends React.Component {
           description: this.state.postDescription
         })
       });
-      console.log(response);
-      if (response.state == 200) {
-        const body = this.state.images.map((image, index) => {
-          return JSON.stringify({
-            url: image['url'],
-            post_id: this.props.postId
-          })
-        });
-        const newImages = await fetch('http://127.0.0.1:5000/images', {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            title: this.state.postTitle,
-            description: this.state.postDescription
-          })
-        });
-        console.log(newImages);
+    } catch(err) {
+      console.error(err);
+    }
+    try {
+      if (postResponse.status == 200) {
+        for (const image of this.state.images) {
+          await fetch(URLS.IMAGES_ENDPOINT, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              url: image[STRINGS.IMAGE_URL_INDEX],
+              post_id: this.props.postId
+            })
+          });
+        }
       }
     } catch(err) {
       console.error(err);
     }
+    this.props.handleRefreshFeed();
+    this.handleResetState();
   }
-
 
   handleAddImageInput(event) {
     event.preventDefault();
     const image = {
       url: ""
-    }
+    };
     let images = this.state.images;
     images.push(image);
     this.setState({images: images});
@@ -147,7 +152,7 @@ class CreatePostForm extends React.Component {
   handleUrlInputChange(event, index) {
     const url = event.target.value;
     let images = this.state.images;
-    images[index]['url'] = url;
+    images[index][STRINGS.IMAGE_URL_INDEX] = url;
     this.setState({images: images});
   }
 
@@ -161,37 +166,49 @@ class CreatePostForm extends React.Component {
     this.setState({postDescription: postDescription});
   }
 
+  handleResetState() {
+    this.setState({
+      images: [{
+        url: ''
+      }],
+      postTitle: '',
+      postDescription: ''
+    })
+  }
+
   render() {
-    let images = this.state.images
-    let submissionDisabled = this.state.postTitle == '' || this.state.postDescription == '' || this.state.images[0]['url'] == '';
+    let urlFieldsEmpty = true;
+    const filteredImages = this.state.images.filter(image => image[STRINGS.IMAGE_URL_INDEX] == '');
+    if (filteredImages.length == 0) urlFieldsEmpty = false;
+    let submissionDisabled = this.state.postTitle == '' || this.state.postDescription == '' || urlFieldsEmpty;
     return (
       <div>
-        <h1 className="new-post-form-header-text">{"Create a New Post"}</h1>
+        <h1 className="new-post-form-header-text">{STRINGS.FORM_HEADER_TEXT}</h1>
         <Form 
           className="new-post-form border-bottom" 
           onSubmit={this.handleSubmitForm}>
           <FormGroup>
-            <Label for="title">Post Title</Label>
+            <Label for="title">{STRINGS.FORM_POST_TITLE_TEXT}</Label>
             <Input 
               type="text" 
               name="title" 
               id="title" 
-              placeholder="Post Title"
+              placeholder={STRINGS.FORM_POST_TITLE_TEXT}
               onChange={(event) => this.handlePostTitleChange(event)}
             />
           </FormGroup>
           <FormGroup>
-            <Label for="description">Post Description</Label>
+            <Label for="description">{STRINGS.FORM_POST_DESCRIPTION_TEXT}</Label>
             <Input 
               type="textarea" 
               name="description" 
               id="description" 
-              placeholder="Post Description"
+              placeholder={STRINGS.FORM_POST_DESCRIPTION_TEXT}
               onChange={(event) => this.handlePostDescriptionChange(event)}
             />
           </FormGroup>
           <FormGroup>
-            <Label for="url">Image Urls</Label>
+            <Label for="url">{STRINGS.FORM_IMAGE_URLS_TEXT}</Label>
             <ImageInputs 
               images={this.state.images}
               handleUrlInputChange={this.handleUrlInputChange}
@@ -203,14 +220,14 @@ class CreatePostForm extends React.Component {
             className="new-post-form-add-image-button" 
             onClick={this.handleAddImageInput}
           >
-            Add Image Field
+            {STRINGS.FORM_ADD_FIELD_BUTTON}
           </Button>
           <Button 
             color="primary" 
             className="new-post-form-submit-image-button"
             disabled={submissionDisabled}
           >
-            Submit
+            {STRINGS.FORM_SUBMIT_BUTTON}
           </Button>
         </Form>
       </div>

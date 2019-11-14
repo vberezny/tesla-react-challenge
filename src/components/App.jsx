@@ -6,27 +6,36 @@ import {
   CardBody,
   CardTitle,
   CardSubtitle,
-  UncontrolledCarousel
+  UncontrolledCarousel,
+  CardImg
 } from 'reactstrap';
-import CreatePostForm from './CreatePostForm.jsx'
-
-// TODO: style check: consistent use of semicolons, no code re-use, airbnb standards, css class on everything
-// TODO: setup contants file
+import CreatePostForm from './CreatePostForm.jsx';
+import {
+  STRINGS,
+  URLS
+} from './Constants.js';
 
 function Post(props) {
+  let multipleImages = true;
+  if (props.postData.images.length == 1) multipleImages = false;
   let items = [];
   props.postData.images.map((image, index) => {
     items.push({ 
-      "src": image["url"],
+      "src": image[STRINGS.IMAGE_URL_INDEX],
       "key": index
-    })
-  })
+    });
+  });
   return (
     <Card>
       <CardBody>
         <CardTitle className="post-title">{props.postData.title}</CardTitle>
-        {/* TODO: make it so it doesn't autoPlay, pause on hover prop? */}
-        <UncontrolledCarousel className="post-carousel" items={items} autoPlay={false} />
+        <UncontrolledCarousel 
+          className="post-image-carousel" 
+          items={items} 
+          autoPlay={false}
+          controls={multipleImages}
+          indicators={multipleImages}
+        />
         <CardSubtitle className="post-description">{props.postData.description}</CardSubtitle>
       </CardBody>
     </Card>
@@ -44,7 +53,7 @@ function Feed(props) {
         <Post postData={post}></Post>
       </div>
     );
-  })
+  });
   return posts;
 }
 
@@ -68,10 +77,10 @@ class App extends React.Component {
 
   async handleRefreshFeed() {
     try {
-      const response = await fetch('http://127.0.0.1:5000/posts');
+      const response = await fetch(URLS.POSTS_ENDPOINT);
       const posts = await response.json();
       if (posts) {
-        let nextPostId = posts[posts.length - 1]['id'] + 1;
+        let nextPostId = posts[posts.length - 1][STRINGS.POST_ID_INDEX] + 1;
         this.setState({
           posts: posts,
           nextPostId: nextPostId
@@ -86,7 +95,7 @@ class App extends React.Component {
     return (
       <div className="insta-basic-page-container container-fluid">
         <div className="row justify-content-center">
-          <h1 className="insta-basic-title">InstaBasic</h1>
+          <h1 className="insta-basic-title">{STRINGS.APP_TITLE}</h1>
         </div>
         <div className="row new-post-form-row">
           <div className="col-md-8 offset-md-2">
@@ -98,7 +107,7 @@ class App extends React.Component {
         </div>
         <div className="row">
           <div className="col-md-8 offset-md-2">
-            <Feed posts={this.state.posts}></Feed>
+            <Feed posts={this.state.posts} />
           </div>
         </div>
       </div>
