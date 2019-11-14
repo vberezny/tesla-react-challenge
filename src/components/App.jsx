@@ -6,8 +6,7 @@ import {
   CardBody,
   CardTitle,
   CardSubtitle,
-  UncontrolledCarousel,
-  CardImg
+  UncontrolledCarousel
 } from 'reactstrap';
 import CreatePostForm from './CreatePostForm.jsx';
 import {
