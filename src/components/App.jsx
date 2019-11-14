@@ -59,9 +59,14 @@ class App extends React.Component {
       posts: [],
       nextPostId: 0
     };
+    this.handleRefreshFeed = this.handleRefreshFeed.bind(this);
   }
 
-  async componentDidMount() {
+  componentDidMount() {
+    this.handleRefreshFeed();
+  };
+
+  async handleRefreshFeed() {
     try {
       const response = await fetch('http://127.0.0.1:5000/posts');
       const posts = await response.json();
@@ -75,11 +80,7 @@ class App extends React.Component {
     } catch(err) {
       console.error(err);
     }
-  };
-
-  // TODO: implement and pass this to the Form component, call the fetch again
-  // handleUpdateFeed() {
-  // }
+  }
 
   render() {
     return (
@@ -91,7 +92,7 @@ class App extends React.Component {
           <div className="col-md-8 offset-md-2">
             <CreatePostForm 
               postId={this.state.nextPostId}
-              // handleSubmitForm={this.handleSubmitForm}
+              handleRefreshFeed={this.handleRefreshFeed}
             />
           </div>
         </div>

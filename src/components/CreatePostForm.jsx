@@ -11,6 +11,39 @@ import {
   InputGroupAddon
 } from 'reactstrap';
 
+function ImageInputs(props) {
+  const imageInputs = props.images.map((image, index) => {
+    const isFirstInput = index == 0;
+    const inputValue = image['url']
+    return (
+      <div key={index} className="new-post-form-url-input-field">
+        <InputGroup>
+          <Input 
+            type="url" 
+            name="image" 
+            id="url"
+            value={inputValue}
+            placeholder="https://www.tesla.com/sites/default/files/blog_images/model-s-photo-gallery-06.jpg"
+            onChange={(event) => props.handleUrlInputChange(event, index)}
+          />
+          <CustomInputGroupAddon
+            index={index}
+            isFirstInput={isFirstInput}
+            handleRemoveImageInput={props.handleRemoveImageInput}
+          />                      
+        </InputGroup>
+      </div>
+    );
+  });
+  return imageInputs;
+}
+
+ImageInputs.propTypes = {
+  images: PropTypes.array,
+  handleUrlInputChange: PropTypes.func,
+  handleRemoveImageInput: PropTypes.func
+};
+
 function CustomInputGroupAddon(props) {
   if (props.isFirstInput) {
     return null;
@@ -39,7 +72,6 @@ class CreatePostForm extends React.Component {
     super(props);
     this.state = {
       images: [{
-        post_id: null,
         url: ''
       }],
       postTitle: '',
@@ -54,11 +86,10 @@ class CreatePostForm extends React.Component {
     this.handlePostDescriptionChange = this.handlePostDescriptionChange.bind(this);
   }
 
-  // TODO implement posting of images to backend and refreshing feed once done.
   async handleSubmitForm(event) {
     event.preventDefault();
     try {
-      const newPost = await fetch('http://127.0.0.1:5000/posts', {
+      const response = await fetch('http://127.0.0.1:5000/posts', {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -69,20 +100,27 @@ class CreatePostForm extends React.Component {
           description: this.state.postDescription
         })
       });
-      console.log(newPost);
-      // if (newPost) {
-      //   const newImages = await fetch('http://127.0.0.1:5000/images', {
-      //   method: 'POST',
-      //   mode: 'cors',
-      //   headers: {
-      //     'Accept': 'application/json'
-      //   },
-      //   body: JSON.stringify({
-      //     title: this.state.postTitle,
-      //     description: this.state.postDescription
-      //   })
-      // });
-      // }
+      console.log(response);
+      if (response.state == 200) {
+        const body = this.state.images.map((image, index) => {
+          return JSON.stringify({
+            url: image['url'],
+            post_id: this.props.postId
+          })
+        });
+        const newImages = await fetch('http://127.0.0.1:5000/images', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            title: this.state.postTitle,
+            description: this.state.postDescription
+          })
+        });
+        console.log(newImages);
+      }
     } catch(err) {
       console.error(err);
     }
@@ -92,7 +130,6 @@ class CreatePostForm extends React.Component {
   handleAddImageInput(event) {
     event.preventDefault();
     const image = {
-      post_id: this.props.postId,
       url: ""
     }
     let images = this.state.images;
@@ -111,7 +148,6 @@ class CreatePostForm extends React.Component {
     const url = event.target.value;
     let images = this.state.images;
     images[index]['url'] = url;
-    if (index == 0) images[index]['post_id'] = this.props.postId;
     this.setState({images: images});
   }
 
@@ -156,31 +192,11 @@ class CreatePostForm extends React.Component {
           </FormGroup>
           <FormGroup>
             <Label for="url">Image Urls</Label>
-            {
-              images.map((image, index) => {
-                const isFirstInput = index == 0;
-                const inputValue = this.state.images[index]['url']
-                return (
-                  <div key={index} className="new-post-form-url-input-field">
-                    <InputGroup>
-                      <Input 
-                        type="url" 
-                        name="image" 
-                        id="url"
-                        value={inputValue}
-                        placeholder="https://www.tesla.com/sites/default/files/blog_images/model-s-photo-gallery-06.jpg"
-                        onChange={(event) => this.handleUrlInputChange(event, index)}
-                      />
-                      <CustomInputGroupAddon
-                        index={index}
-                        isFirstInput={isFirstInput}
-                        handleRemoveImageInput={this.handleRemoveImageInput}
-                      />                      
-                    </InputGroup>
-                  </div>
-                );
-              })
-            }
+            <ImageInputs 
+              images={this.state.images}
+              handleUrlInputChange={this.handleUrlInputChange}
+              handleRemoveImageInput={this.handleRemoveImageInput}
+            />
           </FormGroup>
           <Button 
             color="success" 
